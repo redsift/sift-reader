@@ -1,0 +1,11 @@
+{
+  "name": "counter",
+  "display-name": "Counter Sift",
+  "description": "",
+  "author": "",
+  "version": "1.0.0",
+  "#": "Please use 'redsift npm' instead of system 'npm' ",
+  "dependencies": {
+    "@redsift/text-utilities": "0.0.2"
+  }
+}
