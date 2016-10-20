@@ -5,9 +5,18 @@
     <link rel="stylesheet" href="dist/css/style.min.css">
   </head>
   <body id="home">
+    <rs-hero header="TL;DR" bg-class="-bg-tdlr -effect-darken" scroll-target="#scroll-target" sticky-header=".content">
+      <p class="fade-in delay">TL;DR</p>
+      <code id="monthtotal">&hellip;</code>
+    </rs-hero>
     <div class="column">
       <p>I'm a Sift!</p>
       <p id='number'>0</p>
+      <div class='slider-box'>
+        <span>Span</span>
+        <input id='wpmSlider' type='range' defaultValue='250' min='175' max='330' step='5'/>
+        <span>Cheeta</span>
+      </div>
     </div>
     <!-- Your Sift view bundle -->
     <script src="dist/js/view.umd-es2015.min.js"></script>
