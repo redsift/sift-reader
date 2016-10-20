@@ -2,12 +2,14 @@
  * Counter Sift. Frontend controller entry point.
  */
 import { SiftController, registerSiftController } from '@redsift/sift-sdk-web';
+import Webhook from './lib/webhook';
 
 export default class MyController extends SiftController {
   constructor() {
     // You have to call the super() method to initialize the base class.
     super();
     this._suHandler = this.onStorageUpdate.bind(this);
+    this.view.subscribe('wpm', this.onWPMChange.bind(this));
   }
 
   // for more info: https://docs.redsift.com/docs/client-code-siftcontroller
@@ -41,12 +43,26 @@ export default class MyController extends SiftController {
   }
 
    getCount() {
-    return this.storage.get({
-      bucket: 'count',
-      keys: ['word_count']
-    }).then((values) => {
-      console.log('counter: getCount returned:', values);
-      return values[0];
+    return Promise.resolve('la')
+    // this.storage.get({
+    //   bucket: 'count',
+    //   keys: ['word_count']
+    // }).then((values) => {
+    //   console.log('counter: getCount returned:', values);
+    //   return values[0];
+    // });
+  }
+
+  onWPMChange(value) {
+    console.log('sift-tldr: onWPMChange: ', value);
+    this.storage.get({ bucket: '_redsift', keys: ['webhooks/slider-wh'] }).then((result) => {
+      console.log('sift-tldr: onWPMChange webhook url: ', result[0].value);
+      this._currency = value;
+      this.storage.putUser({ kvs: [{ key: 'wpm', value: value }] });
+      var wh = new Webhook(result[0].value);
+      wh.send('wpm', value);
+    }).catch((error) => {
+      console.error('sift-tldr: onWPMChange: ', error);
     });
   }
 

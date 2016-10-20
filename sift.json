@@ -34,6 +34,13 @@
             ],
             "inMailbox": "Important"
           }
+        },
+        "webhooks":{
+          "slider-wh": {
+            "inbound": {
+              "uri": "{key}/{value}"
+            }
+          }
         }
     },
     "nodes":[{
@@ -55,15 +62,36 @@
         "select": "/*"
       },
       "implementation": {
-        "javascript": "server/node2.js"
+        "javascript": "server/node2.js",
+       "lookup": [{
+          "bucket": "settings",
+          "key": "wpm",
+          "createDependency": true
+        }]
       },
       "outputs": {
         "threads": {}
       }
-    }],
+    },
+    {
+      "#": "Settings",
+      "implementation": {
+        "javascript": "server/settings.js"
+      },
+      "input": {
+        "bucket": "slider-wh"
+      },
+      "outputs": {
+        "settings": {}
+      }
+    }
+    ],
     "stores":{
       "messageCounts": {
         "key$schema": "string/string"
+      },
+      "settings": {
+        "key$schema": "string"
       }
     },
     "outputs":{

@@ -1,3 +1,4 @@
+var userWPM = 250;
 module.exports = function (got) {
   const json = got.in.data.map(d => JSON.parse(d.value));
 
@@ -7,11 +8,20 @@ module.exports = function (got) {
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .shift().count;
 
+  const lookupData = got.lookup;
+  if (lookupData[0] && lookupData[0].data && lookupData[0].data.key === 'wpm') {
+    userWPM = parseInt(lookupData[0].data.value);
+    console.log('NODE2: userWPM: ', userWPM);
+  }
+
+  const mins = newestCount / userWPM;
+  const label = mins < 1 ? '< 1' : Math.round(mins);
+
   return [{
       name: 'threads',
       key: threadId,
       value: {
-        list: newestCount
+        list: label + ' min'
       }
     }
   ]

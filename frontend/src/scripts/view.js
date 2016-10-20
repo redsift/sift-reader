@@ -11,7 +11,7 @@ export default class MyView extends SiftView {
     super();
     Sliders.initAllRanges();
     this.controller.subscribe('counts', this.onCounts.bind(this));
-    this.sliderHandler();
+    this.registerOnLoadHandler(this.sliderHandler.bind(this));
   }
 
   // for more info: https://docs.redsift.com/docs/client-code-siftview
@@ -27,6 +27,17 @@ export default class MyView extends SiftView {
   onCounts(data) {
     console.log('counter: onCounts: ', data);
     document.getElementById('number').textContent = data.value;
+  }
+
+  sliderHandler(){
+    var slider = document.querySelector('#wpmSlider')
+    slider.addEventListener('change', function(e){
+      console.log('lalala', e.target.value);
+      this.publish('wpm', e.target.value);
+    }.bind(this));
+    slider.addEventListener('mouseover', function(e){
+      slider.title = slider.value + 'wpm'
+    })
   }
 
 }
