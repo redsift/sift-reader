@@ -6,6 +6,6 @@
   "version": "1.0.0",
   "#": "Please use 'redsift npm' instead of system 'npm' ",
   "dependencies": {
-    "@redsift/text-utilities": "0.0.2"
+    "@redsift/text-utilities": "0.1.1"
   }
 }
