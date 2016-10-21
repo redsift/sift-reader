@@ -57,8 +57,26 @@ body, html {
 .slider-box
   display: flex;
   align-items: center;
+  
+.legend
+  height: 100%;
+  display: flex;
+  align-self: stretch;
+  justify-content: space-around;
+  padding: 2em;
+  flex-wrap: wrap;
+  
+.legend__step
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  
+.legend__step__icon
+  margin-top: 1em;
+  width: 30px;
+  height: 30px;
 
-@media (max-width: 479px)
+@media (max-width: 230px)
   .content
     height: 100%
     box-sizing: border-box
@@ -68,6 +86,16 @@ body, html {
 
   .hero-sticky-header
     display: none
+  
+  .card-slider
+    display: none
+
+  .legend
+    padding: 0;
+
+  .legend__step
+    min-width: 50px;
+    margin-bottom: 0.5em;
 
 @media (max-height: 230px)
   body

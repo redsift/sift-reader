@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="8158 8112 570.938 570.919">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="9733 8148 570.938 570.919">
   <defs>
     <style>
       .cls-1 {
@@ -6,21 +6,28 @@
       }
 
       .cls-2 {
-        fill: #1f7723;
+        fill: none;
       }
 
       .cls-3 {
         fill: #69e66d;
       }
+
+      .cls-4 {
+        fill: #1f7723;
+      }
     </style>
   </defs>
-  <g id="sift-icon" transform="translate(6709 8283)">
-    <g id="home-buyer-sift-icon" transform="translate(1449 -171)">
-      <path id="path" class="cls-1" d="M570.937,449.132,450.181,570.919l-328.536-1.505L0,449.132.889,120.318,120.211.593,450.181,0,570.937,120.318Z" transform="translate(0 0)"/>
+  <g id="group-19" transform="translate(1575 36)">
+    <g id="sift-icon" transform="translate(6709 8283)">
+      <g id="home-buyer-sift-icon" transform="translate(1449 -171)">
+        <path id="path" class="cls-1" d="M570.937,449.132,450.181,570.919l-328.536-1.505L0,449.132.889,120.318,120.211.593,450.181,0,570.937,120.318Z" transform="translate(0 0)"/>
+      </g>
     </g>
-    <g id="group-4" transform="translate(1010.43 -311.57)">
-      <path id="path-1" class="cls-2" d="M162,164.253h0L0,0H323.991L162,164.247Z" transform="translate(885.992 590.234) rotate(180)"/>
-      <path id="path-1-2" data-name="path-1" class="cls-3" d="M162,164.253h0L0,0H323.991L162,164.247Z" transform="translate(562 262)"/>
+    <g id="group-15" transform="translate(-2147 26.43)">
+      <rect id="rectangle-11" class="cls-2" width="328.501" height="328.501" transform="translate(10426 8216)"/>
+      <path id="path-1" class="cls-3" d="M164.25,164.25,0,0H328.5Z" transform="translate(10426 8216)"/>
+      <path id="path-1-2" data-name="path-1" class="cls-4" d="M164.25,164.25,0,0H328.5Z" transform="translate(10754.501 8544.501) rotate(180)"/>
     </g>
   </g>
 </svg>
