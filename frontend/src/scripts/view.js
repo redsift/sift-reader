@@ -11,6 +11,7 @@ export default class MyView extends SiftView {
     super();
     Sliders.initAllRanges();
     this.sliderId = '#wpmSlider';
+    this.wpmValueId = '#wpmValue';
     this.registerOnLoadHandler(this.sliderHandler.bind(this));
   }
 
@@ -18,6 +19,7 @@ export default class MyView extends SiftView {
   presentView(got) {
     console.log('tldr: presentView: ', got);
     Sliders.setValue(document.querySelector(this.sliderId), got.data.wpmSetting)
+    document.querySelector(this.wpmValueId).innerHTML = got.data.wpmSetting;
   };
 
   willPresentView(value) {
@@ -27,13 +29,14 @@ export default class MyView extends SiftView {
 
   sliderHandler(){
     var slider = document.querySelector(this.sliderId)
+    var wpmValue = document.querySelector(this.wpmValueId)
+    slider.addEventListener('input', function(e){
+      wpmValue.innerHTML = e.target.value;
+    });
     slider.addEventListener('change', function(e){
       this.publish('wpm', e.target.value);
+      wpmValue.innerHTML = e.target.value;
     }.bind(this));
-    slider.addEventListener('mouseover', function(e){
-      // TODO: probably have another element to display the value.
-      slider.title = slider.value + 'wpm'
-    })
   }
 
 }
