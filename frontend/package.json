@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@redsift/ui-rs-core": "^0.8.6",
+    "@redsift/ui-rs-core": "^0.8.7",
     "@redsift/ui-rs-hero": "^0.3.3"
   },
   "devDependencies": {
