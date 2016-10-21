@@ -6,7 +6,9 @@
   "version": "1.0.0",
   "icon": "assets/sift-icon.svg",
    "marketing": {
-    "screenshots": [],
+    "screenshots": [
+      "assets/screenshot-1.png"
+    ],
     "links": [
       {
         "label": "Github",
