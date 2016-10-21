@@ -19,12 +19,12 @@ export default class MyEmailClientController extends EmailClientController {
     if (!listInfo) {
       return null;
     }
-
+    var u = `assets/tldr_${this.bucketing(listInfo)}.svg`;
     return {
       template: '003_list_common_img',
       value: {
         image: {
-          url: `assets/tldr-${this.bucketing(listInfo)}.svg`
+          url: u
         },
         subtitle: listInfo + ' min'
       }
