@@ -15,14 +15,14 @@ export default class MyController extends SiftController {
 
   // for more info: https://docs.redsift.com/docs/client-code-siftcontroller
   loadView(state) {
-    console.log('tdlr: loadView'+ state);
-    // Register for storage update events on the "x" bucket so we can update the UI
-    this.storage.subscribe(['count'], this._suHandler);
+    console.log('tdlr: loadView', state);
+
+    // this.storage.subscribe(['count'], this._suHandler);
     switch (state.type) {
       case 'email-thread':
         return {
-          html: 'email-thread.html',
-          data: {}
+          html: 'detail.html',
+          data: state.params.detail
         };
       case 'summary':
         return {

@@ -1,42 +1,69 @@
-class EmailClientController {
+/**
+ * Observable pattern implementation.
+ * Supports topics as String or an Array.
+ */
+class Observable {
   constructor() {
-    this._proxy = self;
-    this._registerMessageListeners();
+    this._observers = [];
   }
 
-  _registerMessageListeners() {
-    if(!this._proxy) return;
-    this._proxy.onmessage = (e) => {
-      // console.log('[SiftController::onmessage]: ', e.data);
-      let method = e.data.method;
-      if (this['_' + method]) {
-        this['_' + method](e.data.params);
-      }
-      else {
-        // console.log('[EmailClientController::onmessage]: method not implemented: ', method);
-      }
-    };
+  subscribe(topic, observer) {
+    this._op('_sub', topic, observer);
   }
 
-  _emailStats(stats) {
-    if(this.onstats) {
-      this.onstats(stats.name, stats.value);
+  unsubscribe(topic, observer) {
+    this._op('_unsub', topic, observer);
+  }
+
+  unsubscribeAll(topic) {
+    if (!this._observers[topic]) {
+      return;
+    }
+    delete this._observers[topic];
+  }
+
+  publish(topic, message) {
+    this._op('_pub', topic, message);
+  }
+
+  /**
+   * Internal methods
+   */
+  _op(op, topic, value) {
+    if (Array.isArray(topic)) {
+      topic.forEach((t) => {
+        this[op](t, value);
+      });
+    }
+    else {
+      this[op](topic, value);
     }
   }
 
-  _getThreadRowDisplayInfo(params) {
-    // console.log('[EmailClientController::_getThreadRowDisplayInfo]: ', params);
-    var trdis = {};
-    params.tris.forEach((thread) => {
-      if (thread.value !== undefined && thread.value.list !== undefined && this.loadThreadListView) {
-        trdis[thread.key] = this.loadThreadListView(thread.value.list, params.supportedTemplates);
-      }
-    });
-    // Notify the client
-    this._proxy.postMessage({
-      method: 'getThreadRowDisplayInfoCallback',
-      params: trdis
-    });
+  _sub(topic, observer) {
+    this._observers[topic] || (this._observers[topic] = []);
+    if(observer && this._observers[topic].indexOf(observer) === -1) {
+      this._observers[topic].push(observer);
+    }
+  }
+
+  _unsub(topic, observer) {
+    if (!this._observers[topic]) {
+      return;
+    }
+    var index = this._observers[topic].indexOf(observer);
+    if (~index) {
+      this._observers[topic].splice(index, 1);
+    }
+  }
+
+  _pub(topic, message) {
+    if (!this._observers[topic]) {
+      return;
+    }
+    for (var i = this._observers[topic].length - 1; i >= 0; i--) {
+      this._observers[topic][i](message)
+    }
   }
 }
 
@@ -1093,47 +1120,80 @@ logger.setLevel('warn');
  * Copyright (c) 2016 Redsift Limited. All rights reserved.
  */
 
-function registerEmailClientController(emailClientController) {
-  console.log('[Redsift::registerEmailClientController]: registered');
+class SiftView {
+  constructor() {
+    this._resizeHandler = null;
+    this._proxy = parent;
+    this.controller = new Observable();
+    this._registerMessageListeners();
+  }
+
+  publish(topic, value) {
+   this._proxy.postMessage({
+      method: 'notifyController',
+      params: {
+        topic: topic,
+        value: value } },
+      '*');
+  }
+
+  registerOnLoadHandler(handler) {
+    window.addEventListener('load', handler);
+  }
+
+  // TODO: should we really limit resize events to every 1 second?
+  registerOnResizeHandler(handler, resizeTimeout = 1000) {
+    window.addEventListener('resize', () => {
+      if (!this.resizeHandler) {
+        this.resizeHandler = setTimeout(() => {
+          this.resizeHandler = null;
+          handler();
+        }, resizeTimeout);
+      }
+    });
+  }
+
+  _registerMessageListeners() {
+    window.addEventListener('message', (e) => {
+      let method = e.data.method;
+      let params = e.data.params;
+      if(method === 'notifyView') {
+        this.controller.publish(params.topic, params.value);
+      }
+      else if(this[method]) {
+        this[method](params);
+      }
+      else {
+        console.warn('[SiftView]: method not implemented: ', method);
+      }
+    }, false);
+  }
 }
 
 /**
- * Counter Sift. Email client controller entry point.
+ * SiftView
  */
-class MyEmailClientController extends EmailClientController {
-  constructor() {
-    super();
-  }
-  bucketing(v) {
-    return v <= 1.5 ? 1
-      : v <= 3.5 ? 2
-      : 3;
-  }
-
-  tooltip(v) {
-    return `${v < 1 ? '<1' : Math.round(v)} min read`;
-  }
-
-  // for more info: https://docs.redsift.com/docs/client-code-redsiftclient
-  loadThreadListView (listInfo) {
-    console.log('counter: loadThreadListView: ', listInfo);
-    if (!listInfo) {
-      return null;
-    }
-    var u = `assets/tldr_${this.bucketing(listInfo)}.svg`;
-    return {
-      template: '003_list_common_img',
-      value: {
-        image: {
-          url: u
-        },
-        subtitle: this.tooltip(listInfo)
-      }
-    };
-  }
+function registerSiftView(siftView) {
+  console.log('[Redsift::registerSiftView]: registered');
 }
 
-// Do not remove. The Sift is responsible for registering its views and controllers
-registerEmailClientController(new MyEmailClientController());
+class DetailView extends SiftView {
+  constructor() {
+    // You have to call the super() method to initialize the base class.
+    super();
+  }
 
-export default MyEmailClientController;
+  presentView(got) {
+    console.log('detail got', got)
+    if(got.data) {
+      const t = `${+got.data < 1 ? '< 1' : Math.round(got.data)} min read`;
+      document.querySelector('#readTime').innerHTML = t;
+    }
+  }
+
+  willPresentView() {}
+}
+
+registerSiftView(new DetailView(window));
+
+export default DetailView;

@@ -1125,7 +1125,7 @@ var MyEmailClientController = (function (EmailClientController) {
   };
 
   MyEmailClientController.prototype.tooltip = function tooltip (v) {
-    return v < 1 ? "<1 min read" : ((Math.round(v)) + " min read")
+    return ((v < 1 ? '<1' : Math.round(v)) + " min read");
   };
 
   // for more info: https://docs.redsift.com/docs/client-code-redsiftclient
