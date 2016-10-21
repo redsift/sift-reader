@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="1604 -791 200 200">
+  <defs>
+    <style>
+      .cls-1 {
+        clip-path: url(#clip-TL_DR-1);
+      }
+
+      .cls-2 {
+        fill: #222;
+      }
+
+      .cls-3 {
+        fill: #fff;
+      }
+    </style>
+    <clipPath id="clip-TL_DR-1">
+      <rect x="1604" y="-791" width="200" height="200"/>
+    </clipPath>
+  </defs>
+  <g id="TL_DR-1" data-name="TL;DR-1" class="cls-1">
+    <rect class="cls-3" x="1604" y="-791" width="200" height="200"/>
+    <g id="group-4" transform="translate(273.151 -691.215)">
+      <path id="path-1" class="cls-2" d="M27.34,27.721h0L0,0H54.68L27.34,27.72Z" transform="translate(1458.489 27.716) rotate(180)"/>
+      <path id="path-1-2" data-name="path-1" class="cls-2" d="M27.34,27.721h0L0,0H54.68L27.34,27.72Z" transform="translate(1403.809 -27.005)"/>
+    </g>
+  </g>
+</svg>

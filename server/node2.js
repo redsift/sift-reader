@@ -17,13 +17,12 @@ module.exports = function (got) {
   }
 
   const mins = newestCount / userWPM;
-  const label = mins < 1 ? '< 1' : Math.round(mins);
 
   return [{
       name: 'threads',
       key: threadId,
       value: {
-        list: label + ' min'
+        list: mins.toFixed(2)
       }
     }
   ]
