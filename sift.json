@@ -1,10 +1,20 @@
 {
   "name": "tldr",
   "display-name": "TL;DR Sift",
-  "description": "",
+  "description": "A simple Sift that tells you how long will approximately take you to read your emails",
   "author": "Christos Vontas",
   "version": "1.0.0",
   "icon": "assets/sift-icon.svg",
+   "marketing": {
+    "screenshots": [],
+    "links": [
+      {
+        "label": "Github",
+        "type": "github",
+        "url": "https://github.com/redsift/sift-reader"
+      }
+    ]
+  },
   "interfaces": {
     "email": {
       "thread" : {
