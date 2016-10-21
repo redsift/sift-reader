@@ -1898,7 +1898,7 @@ class MyController extends SiftController {
     return this.storage.getUser({ keys: ['wpm']}).then(result =>{
       console.log('controller getUser result', result);
       try {
-        this._wpmSetting = result[0].value
+        this._wpmSetting = result[0].value || this._wpmSetting;
       }catch(e){
         console.log('controller: no value to load from settings');
       }

@@ -1925,7 +1925,7 @@ var MyController = (function (SiftController) {
     return this.storage.getUser({ keys: ['wpm']}).then(function (result) {
       console.log('controller getUser result', result);
       try {
-        this$1._wpmSetting = result[0].value
+        this$1._wpmSetting = result[0].value || this$1._wpmSetting;
       }catch(e){
         console.log('controller: no value to load from settings');
       }
