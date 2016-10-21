@@ -1097,22 +1097,25 @@ function registerEmailClientController(emailClientController) {
   console.log('[Redsift::registerEmailClientController]: registered');
 }
 
+function bucketing(v){
+  return v <= 0.025 ? 1
+      : v <= 1.5 ? 2
+      : v <= 5 ? 3
+      : 4;
+}
+
+function tooltip(v) {
+  return bucketing(v) === 1 ? '< 10 sec read'
+    : bucketing(v) === 2 ? '< 1 min read'
+    : `${Math.round(v)} min read`;
+}
+
 /**
  * Counter Sift. Email client controller entry point.
  */
 class MyEmailClientController extends EmailClientController {
   constructor() {
     super();
-  }
-  bucketing(v) {
-    return v <= 0.03 ? 1
-      : v <= 1.5 ? 2
-      : v <= 5 ? 3
-      : 4;
-  }
-
-  tooltip(v) {
-    return `${v < 1 ? '<1' : Math.round(v)} min read`;
   }
 
   // for more info: https://docs.redsift.com/docs/client-code-redsiftclient
@@ -1121,14 +1124,14 @@ class MyEmailClientController extends EmailClientController {
     if (!listInfo) {
       return null;
     }
-    var u = `assets/tldr-${this.bucketing(listInfo)}.svg`;
+    var u = `assets/tldr-${bucketing(listInfo)}.svg`;
     return {
       template: '003_list_common_img',
       value: {
         image: {
           url: u
         },
-        subtitle: this.tooltip(listInfo)
+        subtitle: tooltip(listInfo)
       }
     };
   }

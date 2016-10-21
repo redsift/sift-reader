@@ -1,4 +1,5 @@
 import { SiftView, registerSiftView } from '@redsift/sift-sdk-web';
+import { tooltip} from './lib/util';
 
 export default class DetailView extends SiftView {
   constructor() {
@@ -9,8 +10,7 @@ export default class DetailView extends SiftView {
   presentView(got) {
     console.log('detail got', got)
     if(got.data) {
-      const t = `${+got.data < 1 ? '< 1' : Math.round(got.data)} min read`;
-      document.querySelector('#readTime').innerHTML = t;
+      document.querySelector('#readTime').innerHTML = tooltip(got.data);
     }
   }
 

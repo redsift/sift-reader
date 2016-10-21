@@ -1177,6 +1177,19 @@ function registerSiftView(siftView) {
   console.log('[Redsift::registerSiftView]: registered');
 }
 
+function bucketing(v){
+  return v <= 0.025 ? 1
+      : v <= 1.5 ? 2
+      : v <= 5 ? 3
+      : 4;
+}
+
+function tooltip(v) {
+  return bucketing(v) === 1 ? '< 10 sec read'
+    : bucketing(v) === 2 ? '< 1 min read'
+    : `${Math.round(v)} min read`;
+}
+
 class DetailView extends SiftView {
   constructor() {
     // You have to call the super() method to initialize the base class.
@@ -1186,8 +1199,7 @@ class DetailView extends SiftView {
   presentView(got) {
     console.log('detail got', got)
     if(got.data) {
-      const t = `${+got.data < 1 ? '< 1' : Math.round(got.data)} min read`;
-      document.querySelector('#readTime').innerHTML = t;
+      document.querySelector('#readTime').innerHTML = tooltip(got.data);
     }
   }
 
