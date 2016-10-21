@@ -1,27 +1,6 @@
 @import "@redsift/ui-rs-core/dist/css/ui-rs-core.min.css"
 @import "@redsift/ui-rs-hero/dist/css/ui-rs-hero.min.css"
 
-body, html {
-  height: 100%;
-}
-
-.column {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 2em;
-}
-
-.detail-content 
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 2em;
-
-.detail-content > * 
-  user-select: none;
-  
-
 .-bg-tdlr
   background-image: url('https://static.redsift.io/assets/sifts/sift-tldr/hero.jpg')
   background-color: rgb(42, 24, 22)
@@ -38,12 +17,59 @@ body, html {
     url('https://static.redsift.io/assets/sifts/sift-tldr/hero_2x.jpg') 2x
   )
 
-.container
-  padding: 16px
-  background-color: white
-  min-width: 500px
+body, html {
+  height: 100%;
+  overflow-x: hidden;
+  background-color: #f7f7f7;
+}
+
+.content
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1em;
+
+.content > * 
+  user-select: none;
+
+.detail-content 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2em;
+
+.detail-content > * 
+  user-select: none;
+
+.card
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  align-self: stretch;
+  border: 1px solid #D7D6D6;
+  margin-bottom: 1em;
+  padding: 0.5em;
+  
+.card:last-child
+  margin-bottom: 0;
   
 .slider-box
   display: flex;
   align-items: center;
+
+@media (max-width: 479px)
+  .content
+    height: 100%
+    box-sizing: border-box
+
+  .hero
+    display: none
+
+  .hero-sticky-header
+    display: none
+
+@media (max-height: 230px)
+  body
+    overflow-y: hidden
   
