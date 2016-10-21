@@ -1865,7 +1865,7 @@ class MyController extends SiftController {
 
   // for more info: https://docs.redsift.com/docs/client-code-siftcontroller
   loadView(state) {
-    console.log('tdlr: loadView', state);
+    console.log('tdlr: loadView', state); 
 
     // this.storage.subscribe(['count'], this._suHandler);
     switch (state.type) {

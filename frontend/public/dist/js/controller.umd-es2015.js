@@ -2,7 +2,7 @@
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
     typeof define === 'function' && define.amd ? define(factory) :
     (global.Sift = factory());
-}(this, (function () { 'use strict';
+}(this, (function () {
 
 /**
  * Observable pattern implementation.
@@ -1890,7 +1890,7 @@ var MyController = (function (SiftController) {
 
   // for more info: https://docs.redsift.com/docs/client-code-siftcontroller
   MyController.prototype.loadView = function loadView (state) {
-    console.log('tdlr: loadView', state);
+    console.log('tdlr: loadView', state); 
 
     // this.storage.subscribe(['count'], this._suHandler);
     switch (state.type) {
