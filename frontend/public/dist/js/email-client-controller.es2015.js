@@ -1107,7 +1107,8 @@ class MyEmailClientController extends EmailClientController {
   bucketing(v) {
     return v <= 1.5 ? 1
       : v <= 3.5 ? 2
-      : 3;
+      : v <= 8 ? 3
+      : 4;
   }
 
   tooltip(v) {
@@ -1120,7 +1121,7 @@ class MyEmailClientController extends EmailClientController {
     if (!listInfo) {
       return null;
     }
-    var u = `assets/tldr_${this.bucketing(listInfo)}.svg`;
+    var u = `assets/tldr-${this.bucketing(listInfo)}.svg`;
     return {
       template: '003_list_common_img',
       value: {
