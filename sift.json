@@ -4,7 +4,7 @@
   "description": "",
   "author": "",
   "version": "1.0.0",
-  "icon": "assets/blueprint.svg",
+  "icon": "assets/sift-icon.svg",
   "interfaces": {
     "email": {
       "thread" : {
