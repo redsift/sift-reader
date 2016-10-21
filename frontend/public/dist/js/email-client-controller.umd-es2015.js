@@ -1124,6 +1124,10 @@ var MyEmailClientController = (function (EmailClientController) {
       : 3;
   };
 
+  MyEmailClientController.prototype.tooltip = function tooltip (v) {
+    return v < 1 ? "<1 min read" : ((Math.round(v)) + " min read")
+  };
+
   // for more info: https://docs.redsift.com/docs/client-code-redsiftclient
   MyEmailClientController.prototype.loadThreadListView = function loadThreadListView (listInfo) {
     console.log('counter: loadThreadListView: ', listInfo);
@@ -1137,7 +1141,7 @@ var MyEmailClientController = (function (EmailClientController) {
         image: {
           url: u
         },
-        subtitle: listInfo + ' min'
+        subtitle: this.tooltip(listInfo)
       }
     };
   };

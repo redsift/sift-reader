@@ -1838,12 +1838,12 @@ var MyView = (function (SiftView) {
 
   // for more info: https://docs.redsift.com/docs/client-code-siftview
   MyView.prototype.presentView = function presentView (got) {
-    console.log('counter: presentView: ', got);
+    console.log('tldr: presentView: ', got);
     Sliders.setValue(document.querySelector(this.sliderId), got.data.wpmSetting)
   };;
 
   MyView.prototype.willPresentView = function willPresentView (value) {
-    console.log('counter: willPresentView: ', value);
+    console.log('tldr: willPresentView: ', value);
   };;
 
 
