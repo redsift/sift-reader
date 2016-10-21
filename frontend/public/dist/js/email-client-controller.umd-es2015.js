@@ -1119,9 +1119,9 @@ var MyEmailClientController = (function (EmailClientController) {
   MyEmailClientController.prototype = Object.create( EmailClientController && EmailClientController.prototype );
   MyEmailClientController.prototype.constructor = MyEmailClientController;
   MyEmailClientController.prototype.bucketing = function bucketing (v) {
-    return v <= 1.5 ? 1
-      : v <= 3.5 ? 2
-      : v <= 8 ? 3
+    return v <= 0.03 ? 1
+      : v <= 1.5 ? 2
+      : v <= 5 ? 3
       : 4;
   };
 

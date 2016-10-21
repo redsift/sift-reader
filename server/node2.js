@@ -22,8 +22,8 @@ module.exports = function (got) {
       name: 'threads',
       key: threadId,
       value: {
-        list: mins.toFixed(2),
-        detail: mins.toFixed(2)
+        list: mins.toFixed(4),
+        detail: mins.toFixed(4)
       }
     }
   ]
