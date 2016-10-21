@@ -13,6 +13,10 @@ export default class MyEmailClientController extends EmailClientController {
       : 3;
   }
 
+  tooltip(v) {
+    return v < 1 ? `<1 min read` : `${Math.round(v)} min read`
+  }
+
   // for more info: https://docs.redsift.com/docs/client-code-redsiftclient
   loadThreadListView (listInfo) {
     console.log('counter: loadThreadListView: ', listInfo);
@@ -26,7 +30,7 @@ export default class MyEmailClientController extends EmailClientController {
         image: {
           url: u
         },
-        subtitle: listInfo + ' min'
+        subtitle: this.tooltip(listInfo)
       }
     };
   }
