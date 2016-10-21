@@ -10,32 +10,28 @@ export default class MyView extends SiftView {
     // You have to call the super() method to initialize the base class.
     super();
     Sliders.initAllRanges();
-    this.controller.subscribe('counts', this.onCounts.bind(this));
+    this.sliderId = '#wpmSlider';
     this.registerOnLoadHandler(this.sliderHandler.bind(this));
   }
 
   // for more info: https://docs.redsift.com/docs/client-code-siftview
-  presentView(value) {
-    console.log('counter: presentView: ', value);
-    this.onCounts(value.data);
+  presentView(got) {
+    console.log('counter: presentView: ', got);
+    Sliders.setValue(document.querySelector(this.sliderId), got.data.wpmSetting)
   };
 
   willPresentView(value) {
     console.log('counter: willPresentView: ', value);
   };
 
-  onCounts(data) {
-    console.log('counter: onCounts: ', data);
-    document.getElementById('number').textContent = data.value;
-  }
 
   sliderHandler(){
-    var slider = document.querySelector('#wpmSlider')
+    var slider = document.querySelector(this.sliderId)
     slider.addEventListener('change', function(e){
-      console.log('lalala', e.target.value);
       this.publish('wpm', e.target.value);
     }.bind(this));
     slider.addEventListener('mouseover', function(e){
+      // TODO: probably have another element to display the value.
       slider.title = slider.value + 'wpm'
     })
   }

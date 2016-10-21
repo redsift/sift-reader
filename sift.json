@@ -59,15 +59,15 @@
       "#": "Second Node",
       "input": {
         "bucket": "messageCounts",
-        "select": "/*"
-      },
-      "implementation": {
-        "javascript": "server/node2.js",
-       "lookup": [{
+        "select": "/*",
+        "lookup": [{
           "bucket": "settings",
           "key": "wpm",
           "createDependency": true
         }]
+      },
+      "implementation": {
+        "javascript": "server/node2.js"
       },
       "outputs": {
         "threads": {}

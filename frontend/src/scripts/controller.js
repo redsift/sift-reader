@@ -8,6 +8,7 @@ export default class MyController extends SiftController {
   constructor() {
     // You have to call the super() method to initialize the base class.
     super();
+    this._wpmSetting = 250;
     this._suHandler = this.onStorageUpdate.bind(this);
     this.view.subscribe('wpm', this.onWPMChange.bind(this));
   }
@@ -26,7 +27,7 @@ export default class MyController extends SiftController {
       case 'summary':
         return {
           html: 'summary.html',
-          data: this.getCount()
+          data: this.loadWPMSetting()
         };
       default:
         console.error('counter: unknown Sift type: ', state.type);
@@ -36,10 +37,10 @@ export default class MyController extends SiftController {
   // Event: storage update
   onStorageUpdate(value) {
     console.log('counter: onStorageUpdate: ', value);
-    return this.getCount().then(ce => {
-      // Publish events from 'count' to view
-      this.publish('counts', ce);
-    });
+    // return this.getCount().then(ce => {
+    //   // Publish events from 'count' to view
+    //   this.publish('counts', ce);
+    // });
   }
 
    getCount() {
@@ -53,13 +54,25 @@ export default class MyController extends SiftController {
     // });
   }
 
+  loadWPMSetting(){
+    return this.storage.getUser({ keys: ['wpm']}).then(result =>{
+      console.log('controller getUser result', result);
+      try {
+        this._wpmSetting = result[0].value
+      }catch(e){
+        console.log('controller: no value to load from settings');
+      }
+      return { wpmSetting: this._wpmSetting }
+    })
+  }
+
   onWPMChange(value) {
     console.log('sift-tldr: onWPMChange: ', value);
-    this.storage.get({ bucket: '_redsift', keys: ['webhooks/slider-wh'] }).then((result) => {
-      console.log('sift-tldr: onWPMChange webhook url: ', result[0].value);
-      this._currency = value;
+    this.storage.get({ bucket: '_redsift', keys: ['webhooks/slider-wh'] }).then(wbr => {
+      console.log('sift-tldr: onWPMChange webhook url: ', wbr[0].value);
+      this._wpmSetting = value;
       this.storage.putUser({ kvs: [{ key: 'wpm', value: value }] });
-      var wh = new Webhook(result[0].value);
+      let wh = new Webhook(wbr[0].value);
       wh.send('wpm', value);
     }).catch((error) => {
       console.error('sift-tldr: onWPMChange: ', error);

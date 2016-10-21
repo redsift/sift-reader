@@ -9,9 +9,11 @@ module.exports = function (got) {
     .shift().count;
 
   const lookupData = got.lookup;
-  if (lookupData[0] && lookupData[0].data && lookupData[0].data.key === 'wpm') {
-    userWPM = parseInt(lookupData[0].data.value);
+  try {
+    userWPM = lookupData[0].data.key === 'wpm' ? parseInt(lookupData[0].data.value) : userWPM
     console.log('NODE2: userWPM: ', userWPM);
+  }catch(e){
+    console.log('no lookup data using default')
   }
 
   const mins = newestCount / userWPM;
