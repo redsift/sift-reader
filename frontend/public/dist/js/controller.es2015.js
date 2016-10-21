@@ -1818,13 +1818,49 @@ function registerSiftController(siftController) {
 }
 
 /**
+ * sift-tldr: webhook sending utility class
+ */
+class Webhook {
+  constructor(url) {
+    this.url = url;
+  }
+
+  send(key, value) {
+    return new Promise((resolve, reject) => {
+      console.log('webhook: send: ', key, value);
+      var wh = new XMLHttpRequest();
+      var whurl = this.url;
+      if (key) {
+        whurl = whurl.replace('{key}', encodeURIComponent(key));
+      }
+      if (value) {
+        whurl = whurl.replace('{value}', encodeURIComponent(value));
+      }
+      wh.addEventListener('load', (event) => {
+        console.log('webhook: send: load: ', event);
+        resolve();
+      });
+      wh.addEventListener('error', (event) => {
+        console.error('webhook: send: error: ', event);
+        reject();
+      });
+      wh.open('GET', whurl);
+      console.log('webhook: send: sending: ', whurl);
+      wh.send();
+    });
+  }
+}
+
+/**
  * Counter Sift. Frontend controller entry point.
  */
 class MyController extends SiftController {
   constructor() {
     // You have to call the super() method to initialize the base class.
     super();
+    this._wpmSetting = 250;
     this._suHandler = this.onStorageUpdate.bind(this);
+    this.view.subscribe('wpm', this.onWPMChange.bind(this));
   }
 
   // for more info: https://docs.redsift.com/docs/client-code-siftcontroller
@@ -1841,7 +1877,7 @@ class MyController extends SiftController {
       case 'summary':
         return {
           html: 'summary.html',
-          data: this.getCount()
+          data: this.loadWPMSetting()
         };
       default:
         console.error('counter: unknown Sift type: ', state.type);
@@ -1851,19 +1887,45 @@ class MyController extends SiftController {
   // Event: storage update
   onStorageUpdate(value) {
     console.log('counter: onStorageUpdate: ', value);
-    return this.getCount().then(ce => {
-      // Publish events from 'count' to view
-      this.publish('counts', ce);
-    });
+    // return this.getCount().then(ce => {
+    //   // Publish events from 'count' to view
+    //   this.publish('counts', ce);
+    // });
   }
 
    getCount() {
-    return this.storage.get({
-      bucket: 'count',
-      keys: ['word_count']
-    }).then((values) => {
-      console.log('counter: getCount returned:', values);
-      return values[0];
+    return Promise.resolve('la')
+    // this.storage.get({
+    //   bucket: 'count',
+    //   keys: ['word_count']
+    // }).then((values) => {
+    //   console.log('counter: getCount returned:', values);
+    //   return values[0];
+    // });
+  }
+
+  loadWPMSetting(){
+    return this.storage.getUser({ keys: ['wpm']}).then(result =>{
+      console.log('controller getUser result', result);
+      try {
+        this._wpmSetting = result[0].value
+      }catch(e){
+        console.log('controller: no value to load from settings');
+      }
+      return { wpmSetting: this._wpmSetting }
+    })
+  }
+
+  onWPMChange(value) {
+    console.log('sift-tldr: onWPMChange: ', value);
+    this.storage.get({ bucket: '_redsift', keys: ['webhooks/slider-wh'] }).then(wbr => {
+      console.log('sift-tldr: onWPMChange webhook url: ', wbr[0].value);
+      this._wpmSetting = value;
+      this.storage.putUser({ kvs: [{ key: 'wpm', value: value }] });
+      let wh = new Webhook(wbr[0].value);
+      wh.send('wpm', value);
+    }).catch((error) => {
+      console.error('sift-tldr: onWPMChange: ', error);
     });
   }
 

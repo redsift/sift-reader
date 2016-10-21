@@ -1104,21 +1104,29 @@ class MyEmailClientController extends EmailClientController {
   constructor() {
     super();
   }
+  bucketing(v) {
+    return v <= 1.5 ? 1
+      : v <= 3.5 ? 2
+      : 3;
+  }
 
   // for more info: https://docs.redsift.com/docs/client-code-redsiftclient
   loadThreadListView (listInfo) {
     console.log('counter: loadThreadListView: ', listInfo);
-    if (listInfo) {
-      return {
-        template: '001_list_common_txt',
-        value: {
-          color: '#ffffff',
-          backgroundColor: '#e11010',
-          subtitle: listInfo + ' words'
-        }
-      };
+    if (!listInfo) {
+      return null;
     }
-  };
+
+    return {
+      template: '003_list_common_img',
+      value: {
+        image: {
+          url: `assets/tldr-${this.bucketing(listInfo)}.svg`
+        },
+        subtitle: listInfo + ' min'
+      }
+    };
+  }
 }
 
 // Do not remove. The Sift is responsible for registering its views and controllers

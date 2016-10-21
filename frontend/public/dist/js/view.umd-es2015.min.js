@@ -1,7 +1,7 @@
 (function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-    typeof define === 'function' && define.amd ? define(factory) :
-    (global.Sift = factory());
+	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+	typeof define === 'function' && define.amd ? define(factory) :
+	(global.Sift = factory());
 }(this, (function () { 'use strict';
 
 /**
@@ -1248,6 +1248,578 @@ function registerSiftView(siftView) {
   console.log('[Redsift::registerSiftView]: registered');
 }
 
+var SCROLL_DURATION = 200;
+
+// Adapted from https://coderwall.com/p/hujlhg/smooth-scrolling-without-jquery
+function smooth_scroll_to(element, target, duration) {
+    target = Math.round(target);
+    duration = Math.round(duration);
+    if (duration < 0) {
+        return Promise.reject('bad duration');
+    }
+    if (duration === 0) {
+        element.scrollTop = target;
+        return Promise.resolve('no-duration');
+    }
+
+    var start_time = Date.now();
+    var end_time = start_time + duration;
+
+    var start_top = element.scrollTop;
+    var distance = target - start_top;
+
+    // based on http://en.wikipedia.org/wiki/Smoothstep
+    var smooth_step = function(start, end, point) {
+        if (point <= start) {
+            return 0;
+        }
+        if (point >= end) {
+            return 1;
+        }
+        var x = (point - start) / (end - start); // interpolation
+        return x * x * (3 - 2 * x);
+    }
+
+    return new Promise(function(resolve, reject) {
+        // This is to keep track of where the element's scrollTop is
+        // supposed to be, based on what we're doing
+        var previous_top = element.scrollTop;
+
+        var timer = null;
+        // This is like a think function from a game loop
+        var scroll_frame = function() {
+            /*
+            // This logic is too fragile
+            if(element.scrollTop != previous_top) {
+                window.clearInterval(timer);
+                reject('interrupted');
+                return;
+            }
+            */
+            // set the scrollTop for this frame
+            var now = Date.now();
+            var point = smooth_step(start_time, end_time, now);
+            var frameTop = Math.round(start_top + (distance * point));
+            element.scrollTop = frameTop;
+
+            // check if we're done!
+            if (now >= end_time) {
+                window.clearInterval(timer);
+                resolve('done');
+                return;
+            }
+
+            // If we were supposed to scroll but didn't, then we
+            // probably hit the limit, so consider it done; not
+            // interrupted.
+            if (element.scrollTop === previous_top && element.scrollTop !== frameTop) {
+                window.clearInterval(timer);
+                resolve('limit');
+                return;
+            }
+            previous_top = element.scrollTop;
+        }
+
+        // boostrap the animation process
+        timer = setInterval(scroll_frame, 10);
+    });
+}
+
+function clickFor(to, offset) {
+    return function(evt) {
+        var target = document.getElementById(to);
+        if (target === undefined) {
+            return true;
+        }
+        offset = offset || 0;
+        var delta = getAbsoluteBoundingRect(target).top + offset;
+        smooth_scroll_to(document.body, delta, SCROLL_DURATION).catch(function(e) {
+            console.error(e);
+        });
+        evt.preventDefault();
+        return false;
+    }
+}
+
+var scrollNodes = [];
+
+function throttle(type, name, obj) {
+    obj = obj || window;
+    var running = false;
+    var func = function() {
+        if (running) {
+            return;
+        }
+        running = true;
+        requestAnimationFrame(function() {
+            obj.dispatchEvent(new CustomEvent(name));
+            running = false;
+        });
+    };
+    obj.addEventListener(type, func);
+}
+
+function onScroll() {
+    var pos = window.scrollY;
+    scrollNodes.forEach(function(params) {
+        var node = params[0];
+        var current = params[1];
+        var cls = params[2];
+        var extents = params[4];
+
+        var state = false;
+        for (var i = 0; i < extents.length; i++) {
+            var extent = extents[i];
+            state = (pos > extent.start && pos < extent.end);
+            if (state) {
+                break;
+            }
+        }
+
+        if (state === current) {
+            return;
+        }
+        params[1] = state;
+        if (state) {
+            node.classList.add(cls);
+        } else {
+            node.classList.remove(cls);
+        }
+    });
+}
+
+function getAbsoluteBoundingRect(el) {
+    var doc = document,
+        win = window,
+        body = doc.body,
+
+        // pageXOffset and pageYOffset work everywhere except IE <9.
+        offsetX = win.pageXOffset !== undefined ? win.pageXOffset :
+        (doc.documentElement || body.parentNode || body).scrollLeft,
+        offsetY = win.pageYOffset !== undefined ? win.pageYOffset :
+        (doc.documentElement || body.parentNode || body).scrollTop,
+
+        rect = el.getBoundingClientRect();
+
+    if (el !== body) {
+        var parent = el.parentNode;
+
+        // The element's rect will be affected by the scroll positions of
+        // *all* of its scrollable parents, not just the window, so we have
+        // to walk up the tree and collect every scroll offset. Good times.
+        while (parent !== body) {
+            offsetX += parent.scrollLeft;
+            offsetY += parent.scrollTop;
+            parent = parent.parentNode;
+        }
+    }
+
+    return {
+        bottom: rect.bottom + offsetY,
+        height: rect.height,
+        left: rect.left + offsetX,
+        right: rect.right + offsetX,
+        top: rect.top + offsetY,
+        width: rect.width
+    };
+}
+
+function updateRegions() {
+    scrollNodes.forEach(function(params) {
+        var target = params[0].getBoundingClientRect();
+        var overlap = params[3];
+
+        var nodes = document.querySelectorAll(overlap);
+        var all = [];
+        for (var i = 0; i < nodes.length; i++) {
+            var node = nodes[i];
+            var ext = getAbsoluteBoundingRect(node);
+            all.push({
+                start: ext.top - target.height,
+                end: ext.bottom
+            });
+        }
+        params[4] = all;
+    });
+}
+
+var Scroll = {
+    initSmooth: function initSmooth(selector, offset) {
+        var nodes = document.querySelectorAll(selector);
+        for (var i = 0; i < nodes.length; i++) {
+            var node = nodes[i];
+            var href = node.attributes.href;
+            if (href === undefined || href.length === 0) {
+                continue;
+            }
+            var to = href.nodeValue.toString();
+            if (to.substr(0, 1) !== '#') {
+                continue;
+            }
+
+            node.addEventListener('click', clickFor(to.substr(1), offset), false);
+        }
+    },
+    toggleClass: function toggleClass(selector, cls, overlap) {
+        var nodes = document.querySelectorAll(selector);
+        if (nodes.length > 0) {
+            window.addEventListener('optimizedResize', updateRegions);
+            window.addEventListener('optimizedScroll', onScroll);
+        }
+        for (var i = 0; i < nodes.length; i++) {
+            var node = nodes[i];
+            var param = [node, null, cls, overlap, []];
+
+            // check for this node
+            var found = false;
+            for (var ii = 0; i < scrollNodes.length; i++) {
+                if (scrollNodes[ii][0] == node) {
+                    scrollNodes[ii] = param;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                scrollNodes.push(param);
+            }
+        }
+        updateRegions();
+        onScroll();
+    },
+    updateRegions: updateRegions
+};
+
+throttle('scroll', 'optimizedScroll');
+throttle('resize', 'optimizedResize');
+
+var style = document.createElement("style");
+document.head.appendChild(style);
+var sheet = style.sheet;
+
+function updateRange(input, index) {
+    var min = input.min || 0;
+    var max = input.max || 100;
+
+    var v = Math.ceil(((input.value - min) / (max - min)) * 100);
+    try {
+        sheet.deleteRule(index);
+    } catch (e) {}
+    sheet.addRule('input[type=range].rs-index-' + index + '::-webkit-slider-runnable-track', 'background-size:' + v + '% 100%', index);
+}
+
+var Sliders = {
+    initAllRanges: function initAllRanges() {
+        var r = document.querySelectorAll('input[type=range]');
+        var loop = function ( i ) {
+            var input = r[i];
+
+            input.className += " rs-index-" + i;
+            updateRange(input, i);
+            (function(idx) {
+                input.addEventListener('input', function() {
+                    updateRange(this, idx);
+                });
+            })(i);
+        };
+
+        for (var i = 0; i < r.length; i++) loop( i );
+    },
+
+    setValue: function setValue(control, value) {
+        control.value = value;
+        var r = document.querySelectorAll('input[type=range]');
+        for (var i = 0; i < r.length; i++) {
+            if (r[i] === control) {
+                updateRange(control, i);
+            }
+        }
+    }
+};
+
+var heroTmpl = "<div class=\"hero\">\n    <div class=\"hero__header\">\n        <h3 class=\"hero__header__content\"><!-- yields header --></h3>\n    </div>\n    <div class=\"hero__container\">\n        <div class=\"hero__content\"><!-- yields content --></div>\n    </div>\n</div>\n";
+
+var RedsiftHero = function RedsiftHero(el, opts) {
+  this.locators = {
+    hero: '.hero',
+    heroContainer: '.hero__container',
+    heroContent: '.hero__content',
+    heroHeader: '.hero__header',
+    heroHeaderContent: '.hero__header__content',
+    heroStickyHeader: '.hero-sticky-header',
+    heroStickyHeaderActive: '.hero-sticky-header--active',
+    scrollDownArrow: '#smooth'
+  }
+
+  this.downArrowHtml = '<div class="down-arrow"></div>';
+  this.hasStickyHeader = false;
+
+  this._setupElement(el, heroTmpl, opts);
+};
+
+RedsiftHero.prototype.setHeader = function setHeader (text) {
+  this.$headerContent.innerHTML = text;
+};
+
+RedsiftHero.prototype.setBgClass = function setBgClass (bgClass) {
+  this.$hero.className += " " + bgClass;
+};
+
+RedsiftHero.prototype.enableStickyHeader = function enableStickyHeader (flag, triggerElSelector) {
+    // NOTE: Do NOT use cached element here. For the first run these elements
+    // are only cached after this feature is handled!
+
+    if (flag) {
+        var $header = document.querySelector(this.locators.heroHeader),
+            $hero = document.querySelector(this.locators.hero);
+
+        if ($header) {
+          $header.classList.remove(this.locators.heroHeader.substr(1));
+          $header.classList.add(this.locators.heroStickyHeader.substr(1));
+          $hero.parentNode.parentNode.appendChild($header);
+        } // else the sticky-header is already present on the page
+
+        if (triggerElSelector && triggerElSelector != '') {
+            try {
+                // TODO: change toggleClass signature to provide element list instead of selector
+                //     for '.content' to be more flexible (i.e. provide first element after hero
+                //     without having to know the name)
+                Scroll.toggleClass(
+                    this.locators.heroStickyHeader,
+                    this.locators.heroStickyHeaderActive.substr(1),
+                    // FIXXME: replace hardcoded '.content' with something appropriate (based on aboves TODO)!
+                    triggerElSelector
+                );
+            } catch (err) {
+                console.log('[redsift-ui/hero] Error enabling sticky header. Did you specify a valid element name for the "sticky-header" attribute?');
+            }
+        }
+
+        this.hasStickyHeader = true;
+    } else {
+        var $header$1 = document.querySelector(this.locators.heroStickyHeader),
+            $hero$1 = document.querySelector(this.locators.hero);
+
+        if ($header$1) {
+            $header$1.classList.add(this.locators.heroHeader.substr(1));
+            $header$1.classList.remove(this.locators.heroStickyHeader.substr(1));
+            $hero$1.insertBefore($header$1, $hero$1.firstChild);
+
+            // TODO: remove toggleClass callback!
+
+            this.hasStickyHeader = false;
+        }
+    }
+};
+
+RedsiftHero.prototype.enableScrollFeature = function enableScrollFeature (flag, scrollTarget) {
+  if (flag) {
+    this.$scrollFeature = this._createScrollFeatureElement(scrollTarget);
+    this.$container.appendChild(this.$scrollFeature);
+
+    var offset = this._getStickyHeaderHeight();
+    Scroll.initSmooth(this.locators.scrollDownArrow, -offset);
+  } else if (this.$scrollFeature && this.$scrollFeature.parentNode) {
+    this.$scrollFeature.parentNode.removeChild(this.$scrollFeature);
+  }
+};
+
+//----------------------------------------------------------
+// Private API:
+//----------------------------------------------------------
+
+RedsiftHero.prototype._setupElement = function _setupElement (el, heroTmpl, opts) {
+  // Get the user provided inner block of the element, replace the elements
+  // content with the hero tree and insert the content at the correct place.
+  var userTmpl = el.innerHTML;
+  el.innerHTML = heroTmpl;
+
+  var content = document.querySelector(this.locators.heroContent);
+  content.innerHTML = userTmpl;
+
+  // NOTE: handle sticky header before caching, as this.$header is set
+  // differently depending this feature:
+  if (opts.hasStickyHeader) {
+    this.enableStickyHeader(true, opts.stickyHeaderTrigger);
+  }
+
+  this._cacheElements(opts.hasStickyHeader);
+
+  if (opts.header) {
+    this.setHeader(opts.header);
+  }
+
+  if (opts.bgClass) {
+    this.setBgClass(opts.bgClass);
+  }
+
+  if (opts.scrollTarget) {
+    this.enableScrollFeature(true, opts.scrollTarget);
+  }
+};
+
+RedsiftHero.prototype._createScrollFeatureElement = function _createScrollFeatureElement (scrollTarget) {
+  var a = document.createElement('a');
+
+  a.id = this.locators.scrollDownArrow.substr(1);
+  a.href = scrollTarget;
+  a.innerHTML = this.downArrowHtml;
+
+  // FIXXME: If the arrow is on the same height as the header it is not
+  // clickable due to the z-index.
+
+  return a;
+};
+
+RedsiftHero.prototype._getStickyHeaderHeight = function _getStickyHeaderHeight () {
+    var height = 0;
+
+    try {
+        if (this.hasStickyHeader) {
+            height = this.$header.getBoundingClientRect().height
+        }
+    } catch (err) {
+        console.log('[redsift-ui/hero] Error enabling sticky header. Did you specify a valid element name for the "sticky-header" attribute?');
+    }
+};
+
+// TODO: implement generic caching functionality, e.g. this.querySelector(selector, useCache)
+RedsiftHero.prototype._cacheElements = function _cacheElements (hasStickyHeader) {
+  this.$hero = document.querySelector(this.locators.hero);
+  if (hasStickyHeader) {
+    this.$header = document.querySelector(this.locators.heroStickyHeader);
+  } else {
+    this.$header = document.querySelector(this.locators.heroHeader);
+  }
+  this.$headerContent = document.querySelector(this.locators.heroHeaderContent);
+  this.$container = document.querySelector(this.locators.heroContainer);
+  this.$content = document.querySelector(this.locators.heroContent);
+  this.$scrollFeature = undefined;
+};
+
+var RedsiftHeroWebComponent = (function (HTMLElement) {
+  function RedsiftHeroWebComponent () {
+    HTMLElement.apply(this, arguments);
+  }
+
+  if ( HTMLElement ) RedsiftHeroWebComponent.__proto__ = HTMLElement;
+  RedsiftHeroWebComponent.prototype = Object.create( HTMLElement && HTMLElement.prototype );
+  RedsiftHeroWebComponent.prototype.constructor = RedsiftHeroWebComponent;
+
+  var prototypeAccessors = { header: {},bgClass: {},hasStickyHeader: {},stickyHeader: {},scrollTarget: {} };
+
+  RedsiftHeroWebComponent.prototype.attachedCallback = function attachedCallback () {
+    var stickyHeaderTrigger = this.stickyHeader;
+
+    this.rsHero = new RedsiftHero(this, {
+      hasStickyHeader: this.hasStickyHeader,
+      stickyHeaderTrigger: stickyHeaderTrigger,
+      header: this.header,
+      bgClass: this.bgClass,
+      scrollTarget: this.scrollTarget
+    });
+  };
+
+  RedsiftHeroWebComponent.prototype.attributeChangedCallback = function attributeChangedCallback (attributeName, oldValue, newValue) {
+    if (attributeName === 'scroll-target') {
+      if (!newValue) {
+        this.rsHero.enableScrollFeature(false);
+      }
+
+      if (newValue && !oldValue) {
+        this.rsHero.enableScrollFeature(true, this.scrollTarget);
+      }
+    }
+
+    if (attributeName === 'sticky-header') {
+      if (this.hasStickyHeader) {
+        if (!newValue || newValue == '') {
+          console.log('[redsift-ui] WARNING: No selector specified with "sticky-header" attribute. No "hero-sticky-header--active" class will be added!');
+        }
+        this.rsHero.enableStickyHeader(true, this.stickyHeader);
+      } else {
+        this.rsHero.enableStickyHeader(false);
+      }
+    }
+  };
+
+  //----------------------------------------------------------------------------
+  // Attributes:
+  //----------------------------------------------------------------------------
+
+  prototypeAccessors.header.get = function () {
+    return this.getAttribute('header');
+  };
+
+  prototypeAccessors.header.set = function (val) {
+    this.setAttribute('header', val);
+  };
+
+  prototypeAccessors.bgClass.get = function () {
+    return this.getAttribute('bg-class');
+  };
+
+  prototypeAccessors.bgClass.set = function (val) {
+    this.setAttribute('bg-class', val);
+  };
+
+  prototypeAccessors.hasStickyHeader.get = function () {
+    var a = this.getAttribute('sticky-header');
+    if (a == '' || a) {
+      return true;
+    }
+
+    return false;
+  };
+
+  prototypeAccessors.stickyHeader.get = function () {
+      return this.getAttribute('sticky-header');
+  };
+
+  prototypeAccessors.stickyHeader.set = function (val) {
+    return this.setAttribute('sticky-header', val);
+  };
+
+  prototypeAccessors.scrollTarget.get = function () {
+    return this.getAttribute('scroll-target');
+  };
+
+  prototypeAccessors.scrollTarget.set = function (val) {
+    return this.setAttribute('scroll-target', val);
+  };
+
+  Object.defineProperties( RedsiftHeroWebComponent.prototype, prototypeAccessors );
+
+  return RedsiftHeroWebComponent;
+}(HTMLElement));
+
+function registerHeroElement () {
+    try {
+        document.registerElement('rs-hero', RedsiftHeroWebComponent);
+    } catch (e) {
+        console.log('[redsift-ui] Element already exists: ', e);
+    }
+}
+
+(function() {
+  if ('registerElement' in document
+      && 'import' in document.createElement('link')
+      && 'content' in document.createElement('template')) {
+    // platform is good!
+    // register the element per default:
+    registerHeroElement();
+  } else {
+    // polyfill the platform!
+    var e = document.createElement('script');
+    e.src = 'https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/0.7.22/CustomElements.js';
+    document.body.appendChild(e);
+
+    window.addEventListener('WebComponentsReady', function(e) {
+      // register the element per default:
+      registerHeroElement();
+    });
+  }
+})();
+
 /**
  * Counter Sift. Frontend view entry point.
  */
@@ -1255,7 +1827,9 @@ var MyView = (function (SiftView) {
   function MyView() {
     // You have to call the super() method to initialize the base class.
     SiftView.call(this);
-    this.controller.subscribe('counts', this.onCounts.bind(this));
+    Sliders.initAllRanges();
+    this.sliderId = '#wpmSlider';
+    this.registerOnLoadHandler(this.sliderHandler.bind(this));
   }
 
   if ( SiftView ) MyView.__proto__ = SiftView;
@@ -1263,18 +1837,25 @@ var MyView = (function (SiftView) {
   MyView.prototype.constructor = MyView;
 
   // for more info: https://docs.redsift.com/docs/client-code-siftview
-  MyView.prototype.presentView = function presentView (value) {
-    console.log('counter: presentView: ', value);
-    this.onCounts(value.data);
+  MyView.prototype.presentView = function presentView (got) {
+    console.log('counter: presentView: ', got);
+    Sliders.setValue(document.querySelector(this.sliderId), got.data.wpmSetting)
   };;
 
   MyView.prototype.willPresentView = function willPresentView (value) {
     console.log('counter: willPresentView: ', value);
   };;
 
-  MyView.prototype.onCounts = function onCounts (data) {
-    console.log('counter: onCounts: ', data);
-    document.getElementById('number').textContent = data.value;
+
+  MyView.prototype.sliderHandler = function sliderHandler (){
+    var slider = document.querySelector(this.sliderId)
+    slider.addEventListener('change', function(e){
+      this.publish('wpm', e.target.value);
+    }.bind(this));
+    slider.addEventListener('mouseover', function(e){
+      // TODO: probably have another element to display the value.
+      slider.title = slider.value + 'wpm'
+    })
   };
 
   return MyView;

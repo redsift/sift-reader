@@ -1839,13 +1839,49 @@ function registerSiftController(siftController) {
 }
 
 /**
+ * sift-tldr: webhook sending utility class
+ */
+var Webhook = function Webhook(url) {
+  this.url = url;
+};
+
+Webhook.prototype.send = function send (key, value) {
+    var this$1 = this;
+
+  return new Promise(function (resolve, reject) {
+    console.log('webhook: send: ', key, value);
+    var wh = new XMLHttpRequest();
+    var whurl = this$1.url;
+    if (key) {
+      whurl = whurl.replace('{key}', encodeURIComponent(key));
+    }
+    if (value) {
+      whurl = whurl.replace('{value}', encodeURIComponent(value));
+    }
+    wh.addEventListener('load', function (event) {
+      console.log('webhook: send: load: ', event);
+      resolve();
+    });
+    wh.addEventListener('error', function (event) {
+      console.error('webhook: send: error: ', event);
+      reject();
+    });
+    wh.open('GET', whurl);
+    console.log('webhook: send: sending: ', whurl);
+    wh.send();
+  });
+};
+
+/**
  * Counter Sift. Frontend controller entry point.
  */
 var MyController = (function (SiftController) {
   function MyController() {
     // You have to call the super() method to initialize the base class.
     SiftController.call(this);
+    this._wpmSetting = 250;
     this._suHandler = this.onStorageUpdate.bind(this);
+    this.view.subscribe('wpm', this.onWPMChange.bind(this));
   }
 
   if ( SiftController ) MyController.__proto__ = SiftController;
@@ -1866,7 +1902,7 @@ var MyController = (function (SiftController) {
       case 'summary':
         return {
           html: 'summary.html',
-          data: this.getCount()
+          data: this.loadWPMSetting()
         };
       default:
         console.error('counter: unknown Sift type: ', state.type);
@@ -1875,22 +1911,50 @@ var MyController = (function (SiftController) {
 
   // Event: storage update
   MyController.prototype.onStorageUpdate = function onStorageUpdate (value) {
-    var this$1 = this;
-
     console.log('counter: onStorageUpdate: ', value);
-    return this.getCount().then(function (ce) {
-      // Publish events from 'count' to view
-      this$1.publish('counts', ce);
-    });
+    // return this.getCount().then(ce => {
+    //   // Publish events from 'count' to view
+    //   this.publish('counts', ce);
+    // });
   };
 
    MyController.prototype.getCount = function getCount () {
-    return this.storage.get({
-      bucket: 'count',
-      keys: ['word_count']
-    }).then(function (values) {
-      console.log('counter: getCount returned:', values);
-      return values[0];
+    return Promise.resolve('la')
+    // this.storage.get({
+    //   bucket: 'count',
+    //   keys: ['word_count']
+    // }).then((values) => {
+    //   console.log('counter: getCount returned:', values);
+    //   return values[0];
+    // });
+  };
+
+  MyController.prototype.loadWPMSetting = function loadWPMSetting (){
+    var this$1 = this;
+
+    return this.storage.getUser({ keys: ['wpm']}).then(function (result) {
+      console.log('controller getUser result', result);
+      try {
+        this$1._wpmSetting = result[0].value
+      }catch(e){
+        console.log('controller: no value to load from settings');
+      }
+      return { wpmSetting: this$1._wpmSetting }
+    })
+  };
+
+  MyController.prototype.onWPMChange = function onWPMChange (value) {
+    var this$1 = this;
+
+    console.log('sift-tldr: onWPMChange: ', value);
+    this.storage.get({ bucket: '_redsift', keys: ['webhooks/slider-wh'] }).then(function (wbr) {
+      console.log('sift-tldr: onWPMChange webhook url: ', wbr[0].value);
+      this$1._wpmSetting = value;
+      this$1.storage.putUser({ kvs: [{ key: 'wpm', value: value }] });
+      var wh = new Webhook(wbr[0].value);
+      wh.send('wpm', value);
+    }).catch(function (error) {
+      console.error('sift-tldr: onWPMChange: ', error);
     });
   };
 
