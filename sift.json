@@ -2,10 +2,11 @@
   "name": "sift-tldr",
   "display-name": "TL;DR",
   "description": "A simple Sift that tells you how long it will approximately take you to read your emails",
+  "subtitle": "Spot long emails before you even open them",
   "author": "Christos Vontas",
   "version": "1.0.0",
   "icon": "assets/sift-icon.svg",
-   "marketing": {
+  "marketing": {
     "screenshots": [
       "assets/screenshot-1.png"
     ],
