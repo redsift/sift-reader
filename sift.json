@@ -1,5 +1,5 @@
 {
-  "name": "tldr",
+  "name": "sift-tldr",
   "display-name": "TL;DR",
   "description": "A simple Sift that tells you how long will approximately take you to read your emails",
   "author": "Christos Vontas",
@@ -13,7 +13,7 @@
       {
         "label": "Github",
         "type": "github",
-        "url": "https://github.com/redsift/sift-reader"
+        "url": "https://github.com/redsift/sift-tldr"
       }
     ]
   },
