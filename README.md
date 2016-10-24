@@ -4,7 +4,7 @@
 [<img src="http://static.redsift.io/assets/icons/run.svg">](https://dashboard.redsift.cloud/catalogue)
 
 
-This Sift gives you an estimation on how long in will take you to read an email
+This Sift gives you an estimation on how long it will take you to read an email. This is a polished version of the Sift we started building to accompany our [Build it, Use it, Share it](https://medium.com/redsift-outbox/build-it-use-it-share-it-c6fd7936ba4f) blog post.
 
 ![TL;DR Sift](https://static.redsift.io/assets/sifts/sift-tldr/screenshot-1.png)
 
