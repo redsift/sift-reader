@@ -2,7 +2,7 @@
 @import "@redsift/ui-rs-hero/dist/css/ui-rs-hero.min.css"
 
 $cdn = {
-  assets: "https://static.redsift.io/assets/sifts/sift-tldr" 
+  assets: "https://static.redsift.io/assets/sifts/sift-tldr"
 };
 $enable-webp = true;
 
@@ -37,17 +37,17 @@ rs-hero > *
   align-items: center;
   padding: 1em;
 
-.content > * 
+.content > *
   user-select: none;
 
-.detail-content 
+.detail-content
   height: 100%;
   display: flex;
   justify-content: space-around;
   align-items: center;
 
 
-.detail-content > * 
+.detail-content > *
   user-select: none;
 
 .card
@@ -59,14 +59,14 @@ rs-hero > *
   border: 1px solid #D7D6D6;
   margin-bottom: 1em;
   padding: 0.5em;
-  
+
 .card:last-child
   margin-bottom: 0;
 
 .wpm-box
   display: flex;
   align-items: baseline;
-  
+
 .wpm-box p
   margin-left: 1em;
 
@@ -76,7 +76,7 @@ rs-hero > *
 
 #wpmSlider
   margin: 0 1em;
-  
+
 .legend
   height: 100%;
   display: flex;
@@ -84,18 +84,18 @@ rs-hero > *
   justify-content: space-around;
   padding: 2em;
   flex-wrap: wrap;
-  
+
 .legend__step
   display: flex;
   flex-direction: column;
   align-items: center;
-  
+
 .legend__step__icon
   margin-top: 1em;
   width: 30px;
   height: 30px;
 
-@media (max-width: 230px)
+@media (max-width: 480px)
   .content
     height: 100%
     box-sizing: border-box
@@ -105,22 +105,22 @@ rs-hero > *
 
   .hero-sticky-header
     display: none
-  
+
+@media (max-width: 400px), (max-height: 230px)
   .card-slider
     display: none
 
   .legend
-    padding: 0;
+    padding: 0
 
   .legend__step
-    min-width: 50px;
-    margin-bottom: 0.5em;
+    min-width: 50px
+    margin-bottom: 0.5em
 
 @media (max-width: 480px)
   .slider-box
-    align-self: stretch;
+    align-self: stretch
 
 @media (max-height: 230px)
   body
     overflow-y: hidden
-  
