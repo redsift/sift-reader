@@ -1,21 +1,26 @@
-@import "@redsift/ui-rs-core/dist/css/ui-rs-core.min.css"
+@import "@redsift/ui-rs-core/src/index.import"
 @import "@redsift/ui-rs-hero/dist/css/ui-rs-hero.min.css"
 
+$cdn = {
+  assets: "https://static.redsift.io/assets/sifts/sift-tldr" 
+};
+$enable-webp = true;
+
+
 .-bg-tdlr
-  background-image: url('https://static.redsift.io/assets/sifts/sift-tldr/hero.jpg')
-  background-color: rgb(42, 24, 22)
-  background-image: -webkit-image-set(
-    url('https://static.redsift.io/assets/sifts/sift-tldr/hero.jpg') 1x,
-    url('https://static.redsift.io/assets/sifts/sift-tldr/hero_2x.jpg') 2x
-  )
+  bg-webp("/hero", "jpg", $enable-webp, $cdn.assets,
+          linear-gradient(180deg, rgba(0, 0, 0, .15), rgba(0, 0, 0, .15)));
+  bg-retina-webp("/hero", "jpg", $enable-webp, $cdn.assets,
+          linear-gradient(180deg, rgba(0, 0, 0, .15), rgba(0, 0, 0, .15)));
+
 
 .hero-sticky-header--active
   box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, 0.15)
-  background-image: url('https://static.redsift.io/assets/sifts/sift-tldr/hero.jpg')
-  background-image: -webkit-image-set(
-    url('https://static.redsift.io/assets/sifts/sift-tldr/hero.jpg') 1x,
-    url('https://static.redsift.io/assets/sifts/sift-tldr/hero_2x.jpg') 2x
-  )
+  bg-webp("/hero", "jpg", $enable-webp, $cdn.assets,
+          linear-gradient(180deg, rgba(0, 0, 0, .15), rgba(0, 0, 0, .15)));
+  bg-retina-webp("/hero", "jpg", $enable-webp, $cdn.assets,
+          linear-gradient(180deg, rgba(0, 0, 0, .15), rgba(0, 0, 0, .15)));
+
 
 body, html {
   height: 100%;
