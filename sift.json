@@ -1,6 +1,6 @@
 {
   "name": "tldr",
-  "display-name": "TL;DR Sift",
+  "display-name": "TL;DR",
   "description": "A simple Sift that tells you how long will approximately take you to read your emails",
   "author": "Christos Vontas",
   "version": "1.0.0",
