@@ -1891,13 +1891,15 @@ class MyController extends SiftController {
     console.log('tdlr: onStorageUpdate: ', value);
     if(!this._currentDetail || !this._currentDetail.tid){
       console.log('not on an email-thread so no update');
+      return;
     }
     this.storage.get({
       bucket: '_email.tid',
       keys: [ this._currentDetail.tid ]
     }).then(r => {
-      console.log('tdlr will publish recalc');
-      this.publish('recalc', r[0].value);
+      const j = JSON.parse(r[0].value);
+      console.log('tdlr will publish recalc', j.detail);
+      this.publish('recalc', j.detail);
     });
   }
 
