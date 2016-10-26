@@ -11,7 +11,7 @@ export default class MyEmailClientController extends EmailClientController {
 
   // for more info: https://docs.redsift.com/docs/client-code-redsiftclient
   loadThreadListView (listInfo) {
-    console.log('counter: loadThreadListView: ', listInfo);
+    console.log('tldr: loadThreadListView: ', listInfo);
     if (!listInfo) {
       return null;
     }
