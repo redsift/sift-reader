@@ -11,7 +11,7 @@ export default class MyController extends SiftController {
     this._wpmSetting = 250;
     this._currentDetail = null;
     // Bind this to method so it can be used in callbacks
-    this._suHandler = this.onStorageUpdate.bind(this);
+    this.onStorageUpdate = this.onStorageUpdate.bind(this);
     this.view.subscribe('wpm', this.onWPMChange.bind(this));
   }
 
