@@ -1248,10 +1248,10 @@ function registerSiftView(siftView) {
   console.log('[Redsift::registerSiftView]: registered');
 }
 
-function bucketing(v){
-  return v <= 0.025 ? 1
-      : v <= 1.5 ? 2
-      : v <= 5 ? 3
+function bucketing(w){
+  return Math.round(w*60) <= 10 ? 1
+      : Math.round(w*60) <= 90 ? 2
+      : w <= 5 ? 3
       : 4;
 }
 
@@ -1265,6 +1265,7 @@ var DetailView = (function (SiftView) {
   function DetailView() {
     // You have to call the super() method to initialize the base class.
     SiftView.call(this);
+    this.controller.subscribe('recalc', this.recalc.bind(this));
   }
 
   if ( SiftView ) DetailView.__proto__ = SiftView;
@@ -1272,13 +1273,22 @@ var DetailView = (function (SiftView) {
   DetailView.prototype.constructor = DetailView;
 
   DetailView.prototype.presentView = function presentView (got) {
-    console.log('detail got', got)
-    if(got.data) {
-      document.querySelector('#readTime').innerHTML = tooltip(got.data);
-    }
+    console.log('tldr: detail got', got)
+    this.updateView(got.data);
+  };
+
+  DetailView.prototype.recalc = function recalc (got) {
+    console.log('tldr: recalc got', got);
+    this.updateView(got);
   };
 
   DetailView.prototype.willPresentView = function willPresentView () {};
+
+  DetailView.prototype.updateView = function updateView (data){
+    if(data) {
+      document.querySelector('#readTime').innerHTML = tooltip(data);
+    }
+  };
 
   return DetailView;
 }(SiftView));

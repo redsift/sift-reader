@@ -1859,6 +1859,8 @@ class MyController extends SiftController {
     // You have to call the super() method to initialize the base class.
     super();
     this._wpmSetting = 250;
+    this._currentDetail = null;
+    // Bind this to method so it can be used in callbacks
     this._suHandler = this.onStorageUpdate.bind(this);
     this.view.subscribe('wpm', this.onWPMChange.bind(this));
   }
@@ -1866,10 +1868,10 @@ class MyController extends SiftController {
   // for more info: https://docs.redsift.com/docs/client-code-siftcontroller
   loadView(state) {
     console.log('tdlr: loadView', state);
-
-    // this.storage.subscribe(['count'], this._suHandler);
+    this.storage.subscribe(['_email.tid'], this.onStorageUpdate);
     switch (state.type) {
       case 'email-thread':
+        this._currentDetail = state.params;
         return {
           html: 'detail.html',
           data: state.params.detail
@@ -1887,10 +1889,16 @@ class MyController extends SiftController {
   // Event: storage update
   onStorageUpdate(value) {
     console.log('tdlr: onStorageUpdate: ', value);
-    // return this.getCount().then(ce => {
-    //   // Publish events from 'count' to view
-    //   this.publish('counts', ce);
-    // });
+    if(!this._currentDetail || !this._currentDetail.tid){
+      console.log('not on an email-thread so no update');
+    }
+    this.storage.get({
+      bucket: '_email.tid',
+      keys: [ this._currentDetail.tid ]
+    }).then(r => {
+      console.log('tdlr will publish recalc');
+      this.publish('recalc', r[0].value);
+    });
   }
 
 

@@ -1107,10 +1107,10 @@ function registerEmailClientController(emailClientController) {
   console.log('[Redsift::registerEmailClientController]: registered');
 }
 
-function bucketing(v){
-  return v <= 0.025 ? 1
-      : v <= 1.5 ? 2
-      : v <= 5 ? 3
+function bucketing(w){
+  return Math.round(w*60) <= 10 ? 1
+      : Math.round(w*60) <= 90 ? 2
+      : w <= 5 ? 3
       : 4;
 }
 
@@ -1134,7 +1134,7 @@ var MyEmailClientController = (function (EmailClientController) {
 
   // for more info: https://docs.redsift.com/docs/client-code-redsiftclient
   MyEmailClientController.prototype.loadThreadListView = function loadThreadListView (listInfo) {
-    console.log('counter: loadThreadListView: ', listInfo);
+    console.log('tldr: loadThreadListView: ', listInfo);
     if (!listInfo) {
       return null;
     }
