@@ -1,7 +1,7 @@
-export function bucketing(v){
-  return v <= 0.025 ? 1
-      : v <= 1.5 ? 2
-      : v <= 5 ? 3
+export function bucketing(w){
+  return Math.round(w*60) <= 10 ? 1
+      : Math.round(w*60) <= 90 ? 2
+      : w <= 5 ? 3
       : 4;
 }
 
