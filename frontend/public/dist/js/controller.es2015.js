@@ -1887,8 +1887,8 @@ class MyController extends SiftController {
   }
 
   // Event: storage update
-  onStorageUpdate(value) {
-    console.log('tdlr: onStorageUpdate: ', value);
+  onStorageUpdate() {
+    console.log('tdlr: onStorageUpdate: ', this._currentDetail);
     if(!this._currentDetail || !this._currentDetail.tid){
       console.log('not on an email-thread so no update');
       return;
