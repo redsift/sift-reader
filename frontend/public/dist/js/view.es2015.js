@@ -1750,7 +1750,8 @@ class MyView extends SiftView {
     Sliders.initAllRanges();
     this.sliderId = '#wpmSlider';
     this.wpmValueId = '#wpmValue';
-    this.registerOnLoadHandler(this.sliderHandler.bind(this));
+
+    window.addEventListener('load', this.sliderHandler.bind(this))
   }
 
   // for more info: https://docs.redsift.com/docs/client-code-siftview

@@ -1882,7 +1882,7 @@ var MyController = (function (SiftController) {
     this._wpmSetting = 250;
     this._currentDetail = null;
     // Bind this to method so it can be used in callbacks
-    this.onStorageUpdate = this.onStorageUpdate.bind(this);
+
     this.view.subscribe('wpm', this.onWPMChange.bind(this));
   }
 

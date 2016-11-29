@@ -1830,7 +1830,8 @@ var MyView = (function (SiftView) {
     Sliders.initAllRanges();
     this.sliderId = '#wpmSlider';
     this.wpmValueId = '#wpmValue';
-    this.registerOnLoadHandler(this.sliderHandler.bind(this));
+
+    window.addEventListener('load', this.sliderHandler.bind(this))
   }
 
   if ( SiftView ) MyView.__proto__ = SiftView;
