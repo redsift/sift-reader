@@ -22,7 +22,7 @@ module.exports = function (got) {
       key: `${value.threadId}/${value.id}`, // instead of 'value.id
       value: {
         count: count,
-        date: value.date
+        date: value.date  
       }
     }
   });

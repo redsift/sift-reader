@@ -65,7 +65,7 @@
         "javascript": "server/node1.js"
       },
       "outputs": {
-        "messageCounts": {}
+        "messageCounts": {}  
       }
     },
     {
