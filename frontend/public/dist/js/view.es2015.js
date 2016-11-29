@@ -67,6 +67,40 @@ class Observable {
   }
 }
 
+class SiftView {
+  constructor() {
+    this._resizeHandler = null;
+    this._proxy = parent;
+    this.controller = new Observable();
+    this._registerMessageListeners();
+  }
+
+  publish(topic, value) {
+   this._proxy.postMessage({
+      method: 'notifyController',
+      params: {
+        topic: topic,
+        value: value } },
+      '*');
+  }
+
+  _registerMessageListeners() {
+    window.addEventListener('message', (e) => {
+      let method = e.data.method;
+      let params = e.data.params;
+      if(method === 'notifyView') {
+        this.controller.publish(params.topic, params.value);
+      }
+      else if(this[method]) {
+        this[method](params);
+      }
+      else {
+        console.warn('[SiftView]: method not implemented: ', method);
+      }
+    }, false);
+  }
+}
+
 var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {}
 
 function createCommonjsModule(fn, module) {
@@ -1120,56 +1154,6 @@ logger.setLevel('warn');
  * Copyright (c) 2016 Redsift Limited. All rights reserved.
  */
 
-class SiftView {
-  constructor() {
-    this._resizeHandler = null;
-    this._proxy = parent;
-    this.controller = new Observable();
-    this._registerMessageListeners();
-  }
-
-  publish(topic, value) {
-   this._proxy.postMessage({
-      method: 'notifyController',
-      params: {
-        topic: topic,
-        value: value } },
-      '*');
-  }
-
-  registerOnLoadHandler(handler) {
-    window.addEventListener('load', handler);
-  }
-
-  // TODO: should we really limit resize events to every 1 second?
-  registerOnResizeHandler(handler, resizeTimeout = 1000) {
-    window.addEventListener('resize', () => {
-      if (!this.resizeHandler) {
-        this.resizeHandler = setTimeout(() => {
-          this.resizeHandler = null;
-          handler();
-        }, resizeTimeout);
-      }
-    });
-  }
-
-  _registerMessageListeners() {
-    window.addEventListener('message', (e) => {
-      let method = e.data.method;
-      let params = e.data.params;
-      if(method === 'notifyView') {
-        this.controller.publish(params.topic, params.value);
-      }
-      else if(this[method]) {
-        this[method](params);
-      }
-      else {
-        console.warn('[SiftView]: method not implemented: ', method);
-      }
-    }, false);
-  }
-}
-
 /**
  * SiftView
  */
@@ -1177,10 +1161,71 @@ function registerSiftView(siftView) {
   console.log('[Redsift::registerSiftView]: registered');
 }
 
-const SCROLL_DURATION = 200;
+function throttle(type, name, obj) {
+    obj = obj || window;
+    let running = false;
+    let func = function() {
+        if (running) {
+            return;
+        }
+        running = true;
+        requestAnimationFrame(function() {
+            obj.dispatchEvent(new CustomEvent(name));
+            running = false;
+        });
+    };
+    obj.addEventListener(type, func);
+}
+
+throttle('scroll', 'optimizedScroll');
+throttle('resize', 'optimizedResize');
+
+let style = document.createElement("style");
+document.head.appendChild(style);
+let sheet = style.sheet;
+
+function updateRange(input, index) {
+    let min = input.min || 0;
+    let max = input.max || 100;
+
+    let v = Math.ceil(((input.value - min) / (max - min)) * 100);
+    try {
+        sheet.deleteRule(index);
+    } catch (e) {}
+    sheet.addRule('input[type=range].rs-index-' + index + '::-webkit-slider-runnable-track', 'background-size:' + v + '% 100%', index);
+}
+
+let Sliders = {
+    initAllRanges() {
+        let r = document.querySelectorAll('input[type=range]');
+        for (let i = 0; i < r.length; i++) {
+            let input = r[i];
+
+            input.className += " rs-index-" + i;
+            updateRange(input, i);
+            (function(idx) {
+                input.addEventListener('input', function() {
+                    updateRange(this, idx);
+                });
+            })(i);
+        }
+    },
+
+    setValue(control, value) {
+        control.value = value;
+        let r = document.querySelectorAll('input[type=range]');
+        for (let i = 0; i < r.length; i++) {
+            if (r[i] === control) {
+                updateRange(control, i);
+            }
+        }
+    }
+};
+
+const SCROLL_DURATION$1 = 200;
 
 // Adapted from https://coderwall.com/p/hujlhg/smooth-scrolling-without-jquery
-function smooth_scroll_to(element, target, duration) {
+function smooth_scroll_to$1(element, target, duration) {
     target = Math.round(target);
     duration = Math.round(duration);
     if (duration < 0) {
@@ -1254,15 +1299,15 @@ function smooth_scroll_to(element, target, duration) {
     });
 }
 
-function clickFor(to, offset) {
+function clickFor$1(to, offset) {
     return function(evt) {
         let target = document.getElementById(to);
         if (target === undefined) {
             return true;
         }
         offset = offset || 0;
-        let delta = getAbsoluteBoundingRect(target).top + offset;
-        smooth_scroll_to(document.body, delta, SCROLL_DURATION).catch(function(e) {
+        let delta = getAbsoluteBoundingRect$1(target).top + offset;
+        smooth_scroll_to$1(document.body, delta, SCROLL_DURATION$1).catch(function(e) {
             console.error(e);
         });
         evt.preventDefault();
@@ -1270,9 +1315,9 @@ function clickFor(to, offset) {
     }
 }
 
-let scrollNodes = [];
+let scrollNodes$1 = [];
 
-function throttle(type, name, obj) {
+function throttle$1(type, name, obj) {
     obj = obj || window;
     let running = false;
     let func = function() {
@@ -1288,9 +1333,9 @@ function throttle(type, name, obj) {
     obj.addEventListener(type, func);
 }
 
-function onScroll() {
+function onScroll$1() {
     let pos = window.scrollY;
-    scrollNodes.forEach(function(params) {
+    scrollNodes$1.forEach(function(params) {
         let node = params[0];
         let current = params[1];
         let cls = params[2];
@@ -1317,7 +1362,7 @@ function onScroll() {
     });
 }
 
-function getAbsoluteBoundingRect(el) {
+function getAbsoluteBoundingRect$1(el) {
     let doc = document,
         win = window,
         body = doc.body,
@@ -1353,8 +1398,8 @@ function getAbsoluteBoundingRect(el) {
     };
 }
 
-function updateRegions() {
-    scrollNodes.forEach(function(params) {
+function updateRegions$1() {
+    scrollNodes$1.forEach(function(params) {
         let target = params[0].getBoundingClientRect();
         let overlap = params[3];
 
@@ -1362,7 +1407,7 @@ function updateRegions() {
         let all = [];
         for (let i = 0; i < nodes.length; i++) {
             let node = nodes[i];
-            let ext = getAbsoluteBoundingRect(node);
+            let ext = getAbsoluteBoundingRect$1(node);
             all.push({
                 start: ext.top - target.height,
                 end: ext.bottom
@@ -1372,7 +1417,7 @@ function updateRegions() {
     });
 }
 
-let Scroll = {
+let Scroll$1 = {
     initSmooth(selector, offset) {
         let nodes = document.querySelectorAll(selector);
         for (let i = 0; i < nodes.length; i++) {
@@ -1386,14 +1431,14 @@ let Scroll = {
                 continue;
             }
 
-            node.addEventListener('click', clickFor(to.substr(1), offset), false);
+            node.addEventListener('click', clickFor$1(to.substr(1), offset), false);
         }
     },
     toggleClass(selector, cls, overlap) {
         let nodes = document.querySelectorAll(selector);
         if (nodes.length > 0) {
-            window.addEventListener('optimizedResize', updateRegions);
-            window.addEventListener('optimizedScroll', onScroll);
+            window.addEventListener('optimizedResize', updateRegions$1);
+            window.addEventListener('optimizedScroll', onScroll$1);
         }
         for (let i = 0; i < nodes.length; i++) {
             let node = nodes[i];
@@ -1401,69 +1446,32 @@ let Scroll = {
 
             // check for this node
             let found = false;
-            for (let ii = 0; i < scrollNodes.length; i++) {
-                if (scrollNodes[ii][0] == node) {
-                    scrollNodes[ii] = param;
+            for (let ii = 0; i < scrollNodes$1.length; i++) {
+                if (scrollNodes$1[ii][0] == node) {
+                    scrollNodes$1[ii] = param;
                     found = true;
                     break;
                 }
             }
             if (!found) {
-                scrollNodes.push(param);
+                scrollNodes$1.push(param);
             }
         }
-        updateRegions();
-        onScroll();
+        updateRegions$1();
+        onScroll$1();
     },
-    updateRegions: updateRegions
+    updateRegions: updateRegions$1
 };
 
-throttle('scroll', 'optimizedScroll');
-throttle('resize', 'optimizedResize');
+throttle$1('scroll', 'optimizedScroll');
+throttle$1('resize', 'optimizedResize');
 
-let style = document.createElement("style");
-document.head.appendChild(style);
-let sheet = style.sheet;
+let style$1 = document.createElement("style");
+document.head.appendChild(style$1);
+let sheet$1 = style$1.sheet;
 
-function updateRange(input, index) {
-    let min = input.min || 0;
-    let max = input.max || 100;
-
-    let v = Math.ceil(((input.value - min) / (max - min)) * 100);
-    try {
-        sheet.deleteRule(index);
-    } catch (e) {}
-    sheet.addRule('input[type=range].rs-index-' + index + '::-webkit-slider-runnable-track', 'background-size:' + v + '% 100%', index);
-}
-
-let Sliders = {
-    initAllRanges() {
-        let r = document.querySelectorAll('input[type=range]');
-        for (let i = 0; i < r.length; i++) {
-            let input = r[i];
-
-            input.className += " rs-index-" + i;
-            updateRange(input, i);
-            (function(idx) {
-                input.addEventListener('input', function() {
-                    updateRange(this, idx);
-                });
-            })(i);
-        }
-    },
-
-    setValue(control, value) {
-        control.value = value;
-        let r = document.querySelectorAll('input[type=range]');
-        for (let i = 0; i < r.length; i++) {
-            if (r[i] === control) {
-                updateRange(control, i);
-            }
-        }
-    }
-};
-
-var heroTmpl = "<div class=\"hero\">\n    <div class=\"hero__header\">\n        <h3 class=\"hero__header__content\"><!-- yields header --></h3>\n    </div>\n    <div class=\"hero__container\">\n        <div class=\"hero__content\"><!-- yields content --></div>\n    </div>\n</div>\n";
+// NOTE: redsift-bundler doe snot support the import of string templates yet
+// import heroTmpl from '../templates/hero.tmpl';
 
 class RedsiftHero {
   constructor(el, opts) {
@@ -1480,6 +1488,18 @@ class RedsiftHero {
 
     this.downArrowHtml = '<div class="down-arrow"></div>';
     this.hasStickyHeader = false;
+
+    // TODO: replace with string import of template when support is added in redsift-bundler!
+    const heroTmpl = `
+      <div class="hero">
+          <div class="hero__header">
+              <h3 class="hero__header__content"><!-- yields header --></h3>
+          </div>
+          <div class="hero__container">
+              <div class="hero__content"><!-- yields content --></div>
+          </div>
+      </div>
+    `;
 
     this._setupElement(el, heroTmpl, opts);
   }
@@ -1511,7 +1531,7 @@ class RedsiftHero {
                   // TODO: change toggleClass signature to provide element list instead of selector
                   //       for '.content' to be more flexible (i.e. provide first element after hero
                   //       without having to know the name)
-                  Scroll.toggleClass(
+                  Scroll$1.toggleClass(
                       this.locators.heroStickyHeader,
                       this.locators.heroStickyHeaderActive.substr(1),
                       // FIXXME: replace hardcoded '.content' with something appropriate (based on aboves TODO)!
@@ -1545,7 +1565,7 @@ class RedsiftHero {
       this.$container.appendChild(this.$scrollFeature);
 
       let offset = this._getStickyHeaderHeight();
-      Scroll.initSmooth(this.locators.scrollDownArrow, -offset);
+      Scroll$1.initSmooth(this.locators.scrollDownArrow, -offset);
     } else if (this.$scrollFeature && this.$scrollFeature.parentNode) {
       this.$scrollFeature.parentNode.removeChild(this.$scrollFeature);
     }

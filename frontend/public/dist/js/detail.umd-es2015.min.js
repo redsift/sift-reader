@@ -75,6 +75,40 @@ Observable.prototype._pub = function _pub (topic, message) {
   }
 };
 
+var SiftView = function SiftView() {
+  this._resizeHandler = null;
+  this._proxy = parent;
+  this.controller = new Observable();
+  this._registerMessageListeners();
+};
+
+SiftView.prototype.publish = function publish (topic, value) {
+ this._proxy.postMessage({
+    method: 'notifyController',
+    params: {
+      topic: topic,
+      value: value } },
+    '*');
+};
+
+SiftView.prototype._registerMessageListeners = function _registerMessageListeners () {
+    var this$1 = this;
+
+  window.addEventListener('message', function (e) {
+    var method = e.data.method;
+    var params = e.data.params;
+    if(method === 'notifyView') {
+      this$1.controller.publish(params.topic, params.value);
+    }
+    else if(this$1[method]) {
+      this$1[method](params);
+    }
+    else {
+      console.warn('[SiftView]: method not implemented: ', method);
+    }
+  }, false);
+};
+
 var EmailClient = (function (Observable) {
   function EmailClient(proxy) {
     Observable.call(this);
@@ -1187,59 +1221,6 @@ logger.setLevel('warn');
  *
  * Copyright (c) 2016 Redsift Limited. All rights reserved.
  */
-
-var SiftView = function SiftView() {
-  this._resizeHandler = null;
-  this._proxy = parent;
-  this.controller = new Observable();
-  this._registerMessageListeners();
-};
-
-SiftView.prototype.publish = function publish (topic, value) {
- this._proxy.postMessage({
-    method: 'notifyController',
-    params: {
-      topic: topic,
-      value: value } },
-    '*');
-};
-
-SiftView.prototype.registerOnLoadHandler = function registerOnLoadHandler (handler) {
-  window.addEventListener('load', handler);
-};
-
-// TODO: should we really limit resize events to every 1 second?
-SiftView.prototype.registerOnResizeHandler = function registerOnResizeHandler (handler, resizeTimeout) {
-    var this$1 = this;
-    if ( resizeTimeout === void 0 ) resizeTimeout = 1000;
-
-  window.addEventListener('resize', function () {
-    if (!this$1.resizeHandler) {
-      this$1.resizeHandler = setTimeout(function () {
-        this$1.resizeHandler = null;
-        handler();
-      }, resizeTimeout);
-    }
-  });
-};
-
-SiftView.prototype._registerMessageListeners = function _registerMessageListeners () {
-    var this$1 = this;
-
-  window.addEventListener('message', function (e) {
-    var method = e.data.method;
-    var params = e.data.params;
-    if(method === 'notifyView') {
-      this$1.controller.publish(params.topic, params.value);
-    }
-    else if(this$1[method]) {
-      this$1[method](params);
-    }
-    else {
-      console.warn('[SiftView]: method not implemented: ', method);
-    }
-  }, false);
-};
 
 /**
  * SiftView
