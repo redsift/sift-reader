@@ -11,8 +11,8 @@
     "@redsift/ui-rs-hero": "^0.4.0"
   },
   "devDependencies": {
-    "@redsift/sift-sdk-web": "0.7.0",
-    "@redsift/redsift-bundler": "0.5.5",
+    "@redsift/sift-sdk-web": "0.7.1",
+    "@redsift/redsift-bundler": "0.7.3",
     "gulp": "^3.9.1"
   }
 }

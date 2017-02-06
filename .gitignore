@@ -7,6 +7,7 @@ email_creds.json
 bots_creds.json
 slack_creds.json
 .*grip.json
+._redsift.json
 
 
 # Sift server
