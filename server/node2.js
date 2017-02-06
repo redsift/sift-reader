@@ -10,10 +10,10 @@ module.exports = function (got) {
 
   const lookupData = got.lookup;
   try {
-    userWPM = lookupData[0].data.key === 'wpm' ? parseInt(lookupData[0].data.value) : userWPM
-    console.log('NODE2: userWPM: ', userWPM);
+    const datum = lookupData[0].data;
+    userWPM = datum.key === 'wpm' && typeof datum.value === 'number' ? parseInt(datum.value) : userWPM
   }catch(e){
-    console.log('no lookup data using default')
+    console.log('no lookup data for userWPM using default', e)
   }
 
   const mins = newestCount / userWPM;
